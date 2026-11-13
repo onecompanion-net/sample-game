@@ -1,0 +1,61 @@
+{
+	"$comment": "Change id (globally unique, never reused) and studio (your studio handle) before publishing.",
+	"manifest": 1,
+	"id": "paint-party",
+	"title": "Paint Party",
+	"version": "1.0.0",
+	"studio": "your-studio",
+	"genres": [
+		"action"
+	],
+	"players": {
+		"min": 1,
+		"max": 8
+	},
+	"modes": [
+		"solo",
+		"coop"
+	],
+	"entry": {
+		"client": "./src/client.ts"
+	},
+	"realtime": {
+		"kind": "relay",
+		"tickRate": 0,
+		"snapshotRate": 0,
+		"protocol": 1
+	},
+	"locales": [
+		"en",
+		"vi"
+	],
+	"messages": "./messages",
+	"listing": "./listing",
+	"media": {
+		"cover": "./art/cover.webp",
+		"stills": [
+			"./art/still-a.webp",
+			"./art/still-b.webp",
+			"./art/still-c.webp"
+		],
+		"share": "./art/share.jpg"
+	},
+	"budgets": {
+		"clientGzipKB": 50
+	},
+	"capabilities": {
+		"pointerLock": false,
+		"fullscreen": false,
+		"gamepad": false,
+		"audio": false,
+		"network": []
+	},
+	"rating": {
+		"level": "everyone",
+		"descriptors": []
+	},
+	"rights": {
+		"ownsAllContent": true,
+		"thirdParty": []
+	}
+}

@@ -1,0 +1,19 @@
+{
+	"name": "paint-party",
+	"version": "1.0.0",
+	"private": true,
+	"type": "module",
+	"scripts": {
+		"dev": "bun --port 5191 ./index.html",
+		"check": "tsc -p .",
+		"test": "bun test",
+		"validate": "onecompanion-game validate .",
+		"pack": "onecompanion-game pack .",
+		"publish:game": "onecompanion-game publish ."
+	},
+	"devDependencies": {
+		"@onecompanion/game-cli": "git+ssh://git@github.com/onecompanion-net/game-cli.git",
+		"@types/bun": "^1.4.4",
+		"typescript": "^6.0.3"
+	}
+}

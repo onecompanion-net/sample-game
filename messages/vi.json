@@ -1,0 +1,7 @@
+{
+	"title": "Paint Party",
+	"hint": "Kéo để vẽ. Mọi người trong phòng cùng vẽ lên một bức tường.",
+	"painters": "{count, plural, other {# người vẽ}}",
+	"you_host": "Bạn giữ bức tường",
+	"clear": "Xóa nét vẽ của tôi"
+}

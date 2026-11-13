@@ -1,0 +1,7 @@
+{
+	"title": "Paint Party",
+	"hint": "Drag to paint. Everyone in the room paints on the same wall.",
+	"painters": "{count, plural, one {# painter} other {# painters}}",
+	"you_host": "You keep the wall",
+	"clear": "Clear my paint"
+}
