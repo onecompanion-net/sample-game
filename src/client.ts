@@ -1,13 +1,17 @@
 /**
  * Paint Party: everyone in the room paints on one wall. A small, complete example of a hosted OneCompanion game:
  * every string through `t`, CSS with logical properties only (the frame may be right-to-left), no network of its own
- * (only `online.send`), and a `dispose()` that undoes `mount()`.
+ * (only `online.send`), saved data through `options.storage` (the platform keeps it), and a `dispose()` that undoes
+ * `mount()`.
  */
 import type { GameHandle, MountOptions } from './contract.ts';
 import { decodeDot, encodeDot, fromRoom, toRoom } from './relay.ts';
 
 const COLORS = ['#ffb347', '#7fb0dc', '#9be38b', '#f07c9a', '#c59bf2', '#f3e27a', '#6fd3c9', '#e8e8e8'];
 const MAX_DOTS = 20_000;
+/** Your own strokes in solo are kept between visits (the platform stores them; at most this many dots). */
+const SAVE_KEY = 'wall';
+const SAVE_DOTS = 5_000;
 
 export async function mount(host: HTMLElement, o: MountOptions): Promise<GameHandle> {
 	const root = document.createElement('div');
@@ -34,6 +38,26 @@ export async function mount(host: HTMLElement, o: MountOptions): Promise<GameHan
 	let me = 0;
 	let paused = false;
 	const dots: { slot: number; x: number; y: number }[] = [];
+
+	// Solo keeps its wall: load it now, save it (debounced) while painting. Rooms start blank.
+	const keep = !o.online && !!o.storage;
+	let saveTimer: ReturnType<typeof setTimeout> | undefined;
+	const save = () => {
+		if (!keep) return;
+		clearTimeout(saveTimer);
+		saveTimer = setTimeout(() => {
+			const mine = dots.slice(-SAVE_DOTS).map((d) => [Math.round(d.x), Math.round(d.y)]);
+			o.storage!.set(SAVE_KEY, JSON.stringify(mine)).catch(() => {});
+		}, 500);
+	};
+	if (keep) {
+		try {
+			const saved = JSON.parse((await o.storage!.get(SAVE_KEY)) ?? '[]') as [number, number][];
+			for (const [x, y] of saved) dots.push({ slot: 0, x, y });
+		} catch {
+			/* nothing saved, or not ours: start blank */
+		}
+	}
 
 	function draw() {
 		ctx.fillStyle = '#15171c';
@@ -63,10 +87,12 @@ export async function mount(host: HTMLElement, o: MountOptions): Promise<GameHan
 		const y = ((e.clientY - r.top) / r.height) * 1000;
 		paint(me, x, y);
 		o.online?.send(toRoom(encodeDot(x, y)));
+		save();
 	};
 	const clear = () => {
 		for (let i = dots.length - 1; i >= 0; i--) if (dots[i]!.slot === me) dots.splice(i, 1);
 		draw();
+		save();
 	};
 
 	canvas.addEventListener('pointerdown', onPointer);
@@ -91,6 +117,7 @@ export async function mount(host: HTMLElement, o: MountOptions): Promise<GameHan
 		pause: () => void (paused = true),
 		resume: () => void (paused = false),
 		dispose() {
+			clearTimeout(saveTimer);
 			removeEventListener('resize', resize);
 			root.remove();
 		}

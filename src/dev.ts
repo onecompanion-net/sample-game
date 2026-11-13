@@ -10,7 +10,7 @@
 import en from '../messages/en.json';
 import vi from '../messages/vi.json';
 import { mount } from './client.ts';
-import type { MountOptions } from './contract.ts';
+import type { GameStorage, MountOptions } from './contract.ts';
 
 const q = new URLSearchParams(location.search);
 const tables: Record<string, Record<string, string>> = { en, vi };
@@ -51,11 +51,21 @@ if (q.get('net') === 'room') {
 	queueMicrotask(() => deliver(new Uint8Array([0x02, slot, slot, 1, slot, 0])));
 }
 
+/** On the platform, saved data is kept by the platform; here, the page's localStorage stands in for it. */
+const ns = 'paint-party-dev:';
+const storage: GameStorage = {
+	get: async (k) => localStorage.getItem(ns + k),
+	set: async (k, v) => localStorage.setItem(ns + k, v),
+	delete: async (k) => localStorage.removeItem(ns + k),
+	keys: async () => Object.keys(localStorage).filter((k) => k.startsWith(ns)).map((k) => k.slice(ns.length))
+};
+
 const handle = await mount(document.getElementById('host')!, {
 	t,
 	locale,
 	dir: q.get('dir') === 'rtl' ? 'rtl' : 'ltr',
 	...(online ? { online } : {}),
+	storage,
 	onEvent: (e) => console.info('[game event]', e)
 });
 deliver = (b) => handle.onMessage(b);

@@ -19,6 +19,17 @@ export type GameClientEvent =
 	| { type: 'complete'; seconds: number }
 	| { type: 'fatal'; message: string };
 
+/**
+ * Saved data for this game, kept by the platform (ADR 0015): per game, per player device, with a quota. Async, string
+ * values (serialize your own JSON). Games in a frame also get a `localStorage` backed by it.
+ */
+export interface GameStorage {
+	get(key: string): Promise<string | null>;
+	set(key: string, value: string): Promise<void>;
+	delete(key: string): Promise<void>;
+	keys(): Promise<string[]>;
+}
+
 export interface MountOptions {
 	/** Localised text for one of the game's message keys. */
 	t: Translate;
@@ -29,6 +40,8 @@ export interface MountOptions {
 	params?: Readonly<Record<string, string>>;
 	/** Coarse, non-personal lifecycle events. The host decides what, if anything, to report. */
 	onEvent?(event: GameClientEvent): void;
+	/** Saved data, kept by the platform. Absent where the host offers none. */
+	storage?: GameStorage;
 }
 
 export interface GameHandle {

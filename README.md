@@ -48,15 +48,18 @@ ONECOMPANION_TOKEN=oc_… bunx onecompanion-game release <version-id>
 | `src/client.ts`           | The game: `mount(host, options)` → `{ onMessage, pause, resume, dispose }`                  |
 | `src/relay.ts`            | The `relay` room kind's wire format, from the game's side                                   |
 | `src/contract.ts`         | The contract's types (the game imports nothing from the platform)                           |
-| `src/dev.ts`, `index.html`| Local dev host only; not uploaded                                                           |
+| `src/dev.ts`, `index.html`| Local dev host only (its storage is the page's localStorage); not uploaded                 |
 | `messages/<locale>.json`  | In-game text, flat keys, ICU `{name}` and `{n, plural, …}`; `en` is required                |
 | `listing/<locale>.json`   | Store text for all 12 platform locales                                                      |
 | `art/`                    | Cover 1280×720 webp, stills 1280×720 with 320×180 `-thumb` versions, share image 1200×630   |
 
 ## Rules your game runs under
 
-- It runs in a sandboxed frame on its own web address: no cookies, no network except `online.send`, no popups or
-  navigation. Store nothing you cannot lose.
+- OneCompanion serves it from its own host in a sandboxed frame with an anonymous origin: no cookies, no network
+  except `online.send`, no popups or navigation, and no browser storage of its own.
+- Save with `options.storage` (`get`, `set`, `delete`, `keys`; strings, up to 10 MB per game): the platform keeps it
+  for you, per player device. Paint Party saves your solo wall this way. Engines that expect `localStorage` get a
+  stand-in backed by the same store.
 - Every string goes through `t`. Lay out with CSS logical properties (`inset-inline-start`, not `left`): Arabic and
   Urdu players get a right-to-left frame.
 - `dispose()` must undo everything `mount()` did.
