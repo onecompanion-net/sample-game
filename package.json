@@ -1,6 +1,7 @@
 {
 	"name": "paint-party",
 	"version": "1.0.0",
+	"license": "PolyForm-Shield-1.0.0",
 	"private": true,
 	"type": "module",
 	"scripts": {

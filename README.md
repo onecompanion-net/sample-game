@@ -65,3 +65,10 @@ ONECOMPANION_TOKEN=oc_… bunx onecompanion-game release <version-id>
 - `dispose()` must undo everything `mount()` did.
 - `relay` games trust the players' browsers, so they are never ranked. For an authoritative game, ask about the
   `server` room kind (your own `createGameModule()` server module).
+
+
+## License
+
+[PolyForm Shield License 1.0.0](LICENSE.md) with the OneCompanion Games Exception (see [NOTICE.md](NOTICE.md)).
+Build, test and publish games with it, and ship your games anywhere. Do not use it to build or run a competing
+game platform, hosting or multiplayer service, or developer tools or AI skills for one.
