@@ -16,7 +16,7 @@ bun install
 bun run dev        # http://localhost:5191 (solo)
                    # http://localhost:5191/?net=room in two tabs: paint together through a fake relay room
                    # add &lang=vi or &dir=rtl to check another language and right-to-left layout
-bun test           # the relay protocol helpers
+bun test           # the relay protocol helpers and wall coverage
 bun run check      # types
 bun run validate   # builds the upload bundle and runs every check the platform runs
 ```
@@ -24,6 +24,34 @@ bun run validate   # builds the upload bundle and runs every check the platform 
 While `onecompanion-net/game-cli` is private, `bun install` fetches it over SSH (`git+ssh://…` in `package.json`), so
 you need an SSH key on GitHub with access to the organisation. Without one, clone it next to this repository and
 point the dependency at it: `bun add -d file:../game-cli`.
+
+## What it shows
+
+Paint Party uses every part of the client contract, each in a place it makes sense in the game:
+
+| Platform feature | Where | In the game |
+| --- | --- | --- |
+| `mount()` / `dispose()` | `src/client.ts` | Mounts into the host, undoes everything on dispose |
+| Text: `t()`, ICU plurals, right-to-left | `messages/`, `src/client.ts` | Every string; `?lang=vi&dir=rtl` in dev |
+| Rooms: `online.send` / `onMessage` (relay) | `src/relay.ts` | Everyone paints on one wall; the roster names the host |
+| Saved data: `options.storage` | `src/client.ts` | Your solo wall is kept between visits |
+| Studio config: `options.config` | `game.json` `economy.config` | Brush size and wall shade, tuned on your studio page without a new upload |
+| The player's economy: `options.economy` | `src/client.ts`, `economy.json` | Level and Paint Drops in the bar; a palette shop (the platform confirms every purchase); equipping a palette; redeeming your codes in-game |
+| Asset library: `options.assets` | `src/client.ts` | An optional paper texture (`textures/paper.webp`), with a plain wall when it is not uploaded |
+| Casual board: `complete` with `score` | `game.json` `economy.casual` | "Finish" in solo reports how much of the wall you covered |
+| Ruleset as code | `economy.json` | Paint Drops from first play of the day, streaks and playtime, a weekend bonus, two palettes for sale |
+
+The game never grants anything: Paint Drops and XP come from the platform's own rules, and the platform shows the
+reward toasts. Push the ruleset with `bunx onecompanion-game economy push` (it saves a draft; an owner publishes it).
+
+**Server-only features** need the `server` room kind, which studios get by invitation, so they live in the CLI's
+templates instead: match results, milestones and ranked solo runs in `--template verified-solo`; characters, loot
+tables, trades, room travel and checkpoints in `--template persistent-rpg`
+(`bunx github:onecompanion-net/game-cli init my-game --template persistent-rpg`). Run `bunx onecompanion-game test`
+on a server game before uploading.
+
+The dev host (`bun run dev`) stands in for all of it: `?brush=20&shade=light` for config, 250 Paint Drops and the code
+`PAINT-PARTY` for the shop.
 
 ## Publish it
 

@@ -3,7 +3,7 @@
 	"manifest": 1,
 	"id": "paint-party",
 	"title": "Paint Party",
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"studio": "your-studio",
 	"genres": [
 		"action"
@@ -24,6 +24,31 @@
 		"tickRate": 0,
 		"snapshotRate": 0,
 		"protocol": 1
+	},
+	"economy": {
+		"preset": "party",
+		"slots": [
+			"palette"
+		],
+		"config": {
+			"brush.size": {
+				"type": "int",
+				"min": 4,
+				"max": 30,
+				"default": 9
+			},
+			"wall.shade": {
+				"type": "enum",
+				"values": [
+					"dark",
+					"light"
+				],
+				"default": "dark"
+			}
+		},
+		"casual": {
+			"by": "score"
+		}
 	},
 	"locales": [
 		"en",

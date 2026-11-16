@@ -1,0 +1,137 @@
+{
+	"v": 1,
+	"currencies": [
+		{
+			"id": "paint_drops",
+			"name": {
+				"en": "Paint Drops",
+				"vi": "Giọt sơn"
+			},
+			"daily_cap": 300
+		}
+	],
+	"items": [
+		{
+			"id": "palette_neon",
+			"kind": "cosmetic",
+			"rarity": "rare",
+			"slot": "palette",
+			"name": {
+				"en": "Neon palette",
+				"vi": "Bảng màu neon"
+			}
+		},
+		{
+			"id": "palette_pastel",
+			"kind": "cosmetic",
+			"rarity": "uncommon",
+			"slot": "palette",
+			"name": {
+				"en": "Pastel palette",
+				"vi": "Bảng màu pastel"
+			}
+		}
+	],
+	"rules": [
+		{
+			"id": "daily_drops",
+			"trigger": "first_play_today",
+			"effects": [
+				{
+					"type": "currency",
+					"currency": "paint_drops",
+					"amount": {
+						"base": 40
+					}
+				}
+			],
+			"limits": {
+				"per_user": {
+					"day": 1
+				}
+			}
+		},
+		{
+			"id": "streak_drops",
+			"trigger": "play_streak",
+			"when": [
+				{
+					"field": "streak.days",
+					"op": "gte",
+					"value": 3
+				}
+			],
+			"effects": [
+				{
+					"type": "currency",
+					"currency": "paint_drops",
+					"amount": {
+						"base": 60
+					}
+				}
+			],
+			"limits": {
+				"per_user": {
+					"day": 1
+				}
+			}
+		},
+		{
+			"id": "playtime_drops",
+			"trigger": "playtime_minutes",
+			"effects": [
+				{
+					"type": "currency",
+					"currency": "paint_drops",
+					"amount": {
+						"base": 10
+					}
+				}
+			],
+			"limits": {
+				"per_user": {
+					"day": 24
+				}
+			}
+		}
+	],
+	"offers": [
+		{
+			"id": "buy_neon",
+			"price": {
+				"paint_drops": 200
+			},
+			"gives": [
+				{
+					"item": "palette_neon"
+				}
+			],
+			"limit_per_user": 1
+		},
+		{
+			"id": "buy_pastel",
+			"price": {
+				"paint_drops": 120
+			},
+			"gives": [
+				{
+					"item": "palette_pastel"
+				}
+			],
+			"limit_per_user": 1
+		}
+	],
+	"bonuses": [
+		{
+			"id": "weekend_drops",
+			"multiply": 2,
+			"days": [
+				0,
+				6
+			],
+			"assets": [
+				"currency"
+			]
+		}
+	]
+}

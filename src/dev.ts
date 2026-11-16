@@ -6,11 +6,17 @@
  *   http://localhost:5191/            solo
  *   http://localhost:5191/?net=room   open it in two tabs to paint together
  *   ?lang=vi                          another locale; ?dir=rtl to check right-to-left layout
+ *   ?brush=20&shade=light             studio config values (game.json economy.config), as the platform passes them
+ *
+ * The economy here is a stand-in kept in this page: 250 Paint Drops, the offers from economy.json, and the code
+ * PAINT-PARTY for 100 more. On the platform every call is checked by the server and purchases are confirmed by
+ * the platform's own sheet.
  */
 import en from '../messages/en.json';
 import vi from '../messages/vi.json';
 import { mount } from './client.ts';
-import type { GameStorage, MountOptions } from './contract.ts';
+import economyJson from '../economy.json';
+import type { EconomyOffer, EconomyState, GameEconomy, GameStorage, MountOptions } from './contract.ts';
 
 const q = new URLSearchParams(location.search);
 const tables: Record<string, Record<string, string>> = { en, vi };
@@ -60,12 +66,55 @@ const storage: GameStorage = {
 	keys: async () => Object.keys(localStorage).filter((k) => k.startsWith(ns)).map((k) => k.slice(ns.length))
 };
 
+// A stand-in economy with the same shape as the platform's (src/contract.ts GameEconomy).
+const wallet: EconomyState = { level: 3, xp: 120, streakDays: 2, balances: { paint_drops: 250 }, items: [], guest: false };
+const offers: EconomyOffer[] = economyJson.offers.map((x) => ({
+	id: x.id,
+	price: x.price,
+	gives: x.gives.map((g) => ({ item: g.item, qty: 1 })),
+	limit: x.limit_per_user ?? null
+}));
+const economy: GameEconomy = {
+	get: async () => structuredClone(wallet),
+	offers: async () => offers,
+	async purchase(id) {
+		const offer = offers.find((x) => x.id === id);
+		if (!offer) return { ok: false, error: 'no_offer' };
+		// The platform shows its own confirmation here; this page uses the browser's.
+		if (!confirm(`Buy ${offer.gives[0]!.item} for ${offer.price.paint_drops} Paint Drops?`)) return { ok: false, error: 'cancelled' };
+		const price = offer.price.paint_drops ?? 0;
+		if ((wallet.balances.paint_drops ?? 0) < price) return { ok: false, error: 'insufficient' };
+		(wallet.balances as Record<string, number>).paint_drops! -= price;
+		(wallet.items as EconomyState['items'][number][]).push({ id: offer.gives[0]!.item, qty: 1, equipped: null });
+		return { ok: true };
+	},
+	async equip(item, on) {
+		const items = wallet.items as { id: string; qty: number; equipped: string | null }[];
+		if (!items.some((i) => i.id === item)) return { ok: false, error: 'not_owned' };
+		for (const i of items) if (i.equipped === 'palette') i.equipped = null;
+		if (on) items.find((i) => i.id === item)!.equipped = 'palette';
+		return { ok: true };
+	},
+	async redeem(code) {
+		if (code.toUpperCase() !== 'PAINT-PARTY') return { ok: false, error: 'unknown' };
+		(wallet.balances as Record<string, number>).paint_drops! += 100;
+		return { ok: true };
+	}
+};
+const config: Record<string, unknown> = {};
+if (q.get('brush')) config['brush.size'] = Number(q.get('brush'));
+if (q.get('shade')) config['wall.shade'] = q.get('shade');
+
 const handle = await mount(document.getElementById('host')!, {
 	t,
 	locale,
 	dir: q.get('dir') === 'rtl' ? 'rtl' : 'ltr',
 	...(online ? { online } : {}),
 	storage,
-	onEvent: (e) => console.info('[game event]', e)
+	config,
+	economy,
+	// The asset library: nothing uploaded in dev, so the game uses its fallback.
+	assets: { url: () => null, paths: () => [] },
+	onEvent: (e) => console.info('[game event]', e) // `complete` with a score is what feeds the casual board
 });
 deliver = (b) => handle.onMessage(b);
